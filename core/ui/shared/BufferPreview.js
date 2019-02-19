@@ -214,7 +214,7 @@ define([
         }
         var stride = attrib.stride ? attrib.stride : byteAdvance;
         var byteOffset = 0;
-        while (byteOffset < data.byteLength) {
+        while (byteOffset + stride < data.byteLength) {
             var readView = null;
             switch (attrib.type) {
                 case gl.BYTE:
@@ -267,7 +267,7 @@ define([
         switch (drawState.mode) {
             case gl.TRIANGLES:
                 if (indices) {
-                    for (var n = start; n < end; n += 3) {
+                    for (var n = start; n + 2 < end; n += 3) {
                         triangles.push([indices[n], indices[n + 1], indices[n + 2]]);
                     }
                 } else {
@@ -394,14 +394,21 @@ define([
             // Get interested range
             var start;
             var count = drawState.count;
+            var indicesView = indices;
             if (drawState.elementArrayBuffer) {
                 // Indexed
                 start = drawState.offset;
                 switch (drawState.elementArrayType) {
                     case gl.UNSIGNED_BYTE:
+                        if (!ArrayBuffer.isView(indices)) {
+                            indicesView = new Uint8Array(indices, 0, indices.byteLength / 1);
+                        }
                         start /= 1;
                         break;
                     case gl.UNSIGNED_SHORT:
+                        if (!ArrayBuffer.isView(indices)) {
+                            indicesView = new Uint16Array(indices, 0, indices.byteLength / 2);
+                        }
                         start /= 2;
                         break;
                 }
@@ -420,7 +427,7 @@ define([
                     break;
             }
             if (areTriangles) {
-                this.triangles = buildTriangles(gl, drawState, start, count, positionData, indices);
+                this.triangles = buildTriangles(gl, drawState, start, count, positionData, indicesView);
                 var i;
 
                 // Generate interleaved position + normal data from triangles as a TRIANGLES list
