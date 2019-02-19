@@ -133,7 +133,7 @@ define([
                 title: "Hide inspector (F11)",
                 className: "toolbar-right-button-close",
                 onclick: function () {
-                    HostUI.requestFullUI(w.context);
+                    gli.host.HostUI.requestFullUI(w.context);
                 }
             }
         ]);
