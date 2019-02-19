@@ -277,5 +277,6 @@ define([
     };
 
     HostUI.requestFullUI = requestFullUI;
+    window.HostUI = HostUI;
     return HostUI;
 });

@@ -1,6 +1,6 @@
 define([
         '../host/CaptureContext',
-        '../host/HostUI',
+        //'../host/HostUI',
         '../replay/Controller',
         './Tab',
         './tabs/trace/TraceTab',
@@ -12,7 +12,7 @@ define([
         './tabs/vertexarrays/VertexArraysTab',
     ], function (
         captureContext,
-        HostUI,
+        //HostUI,
         Controller,
         Tab,
         TraceTab,

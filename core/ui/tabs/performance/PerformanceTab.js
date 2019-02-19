@@ -12,7 +12,7 @@ define([
         ProgramView
     ) {
 
-    var ProgramsTab = function (w) {
+    var PerformanceTab = function (w) {
         var self = this;
         this.el.appendChild(Tab.genericLeftRightView());
 
@@ -88,5 +88,5 @@ define([
         };
     };
 
-    return ProgramsTab;
+    return PerformanceTab;
 });

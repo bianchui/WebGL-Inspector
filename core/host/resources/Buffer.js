@@ -137,6 +137,10 @@ define([
             for (var n = 0; n < maxVertexAttribs; n++) {
                 if (rawgl.getVertexAttrib(n, rawgl.VERTEX_ATTRIB_ARRAY_ENABLED)) {
                     var glbuffer = rawgl.getVertexAttrib(n, rawgl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
+                    if (!glbuffer) {
+                        console.error("no buffer is bound to enabled attribute");
+                        continue;
+                    }
                     var buffer = glbuffer.trackedObject;
                     if (buffer.currentVersion.structure) {
                         continue;
