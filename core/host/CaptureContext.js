@@ -239,11 +239,35 @@ define([
         var ext = rawgl.getExtension("GLI_frame_terminator");
         ext.frameEvent.addListener(this, frameEndedWrapper);
 
+        var glObjFunctions = [
+            "createBuffer",
+            "createFramebuffer",
+            "createProgram",
+            "createRenderbuffer",
+            "createShader",
+            "createTexture",
+        ];
+        for (var i = glObjFunctions.length - 1; i >= 0; i--) {
+            glObjFunctions[glObjFunctions[i]] = true;
+        }
+
+        function warpResult(fun, propertyName) {
+            var oldFun = fun;
+            return function () {
+                var result = oldFun.apply(this, arguments);
+                result.__createStack = (new Error("")).stack;
+                return result;
+            }
+        }
+
         // Clone all properties in context and wrap all functions
         for (var propertyName in rawgl) {
             if (typeof rawgl[propertyName] == 'function') {
                 // Functions
                 this[propertyName] = wrapFunction(this, propertyName, rawgl[propertyName]);
+                if (glObjFunctions[propertyName]) {
+                    this[propertyName] = warpResult(this[propertyName], propertyName);
+                }
             } else if (propertyName in dynamicContextProperties) {
                 // Enums/constants/etc
                 wrapProperty(this, propertyName);
