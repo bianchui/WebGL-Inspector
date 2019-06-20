@@ -259,33 +259,42 @@ define([
     };
 
     function buildTriangles(gl, drawState, start, count, positionData, indices) {
+        var vertexCount = positionData.length;
         var triangles = [];
 
         var end = start + count;
+        var outIndexCount = 0;
+        function pushTriangle(i1, i2, i3) {
+            if (i1 < vertexCount && i2 < vertexCount && i3 < vertexCount) {
+                triangles.push([i1, i2, i3]);
+            } else {
+                ++outIndexCount;
+            }
+        }
 
         // Emit triangles
         switch (drawState.mode) {
             case gl.TRIANGLES:
                 if (indices) {
                     for (var n = start; n + 2 < end; n += 3) {
-                        triangles.push([indices[n], indices[n + 1], indices[n + 2]]);
+                        pushTriangle(indices[n], indices[n + 1], indices[n + 2]);
                     }
                 } else {
                     for (var n = start; n < end; n += 3) {
-                        triangles.push([n, n + 1, n + 2]);
+                        pushTriangle(n, n + 1, n + 2);
                     }
                 }
                 break;
             case gl.TRIANGLE_FAN:
                 if (indices) {
-                    triangles.push([indices[start], indices[start + 1], indices[start + 2]]);
+                    pushTriangle(indices[start], indices[start + 1], indices[start + 2]);
                     for (var n = start + 2; n < end; n++) {
-                        triangles.push([indices[start], indices[n], indices[n + 1]]);
+                        pushTriangle(indices[start], indices[n], indices[n + 1]);
                     }
                 } else {
-                    triangles.push([start, start + 1, start + 2]);
+                    pushTriangle(start, start + 1, start + 2);
                     for (var n = start + 2; n < end; n++) {
-                        triangles.push([start, n, n + 1]);
+                        pushTriangle(start, n, n + 1);
                     }
                 }
                 break;
@@ -297,21 +306,25 @@ define([
                             continue;
                         }
                         if (n % 2 == 0) {
-                            triangles.push([indices[n], indices[n + 1], indices[n + 2]]);
+                            pushTriangle(indices[n], indices[n + 1], indices[n + 2]);
                         } else {
-                            triangles.push([indices[n + 2], indices[n + 1], indices[n]]);
+                            pushTriangle(indices[n + 2], indices[n + 1], indices[n]);
                         }
                     }
                 } else {
                     for (var n = start; n < end - 2; n++) {
                         if (n % 2 == 0) {
-                            triangles.push([n, n + 1, n + 2]);
+                            pushTriangle(n, n + 1, n + 2);
                         } else {
-                            triangles.push([n + 2, n + 1, n]);
+                            pushTriangle(n + 2, n + 1, n);
                         }
                     }
                 }
                 break;
+        }
+
+        if (outIndexCount) {
+            console.error("buildTriangles(", outIndexCount, ") out of index");
         }
 
         return triangles;
@@ -347,6 +360,7 @@ define([
     //     count: n
     // }
     BufferPreview.prototype.setBuffer = function (drawState, force) {
+        force = true;
         var self = this;
         var gl = this.gl;
         if (this.arrayBufferTarget) {
@@ -394,20 +408,19 @@ define([
             // Get interested range
             var start;
             var count = drawState.count;
-            var indicesView = indices;
             if (drawState.elementArrayBuffer) {
                 // Indexed
                 start = drawState.offset;
                 switch (drawState.elementArrayType) {
                     case gl.UNSIGNED_BYTE:
                         if (!ArrayBuffer.isView(indices)) {
-                            indicesView = new Uint8Array(indices, 0, indices.byteLength / 1);
+                            indices = new Uint8Array(indices, 0, indices.byteLength / 1);
                         }
                         start /= 1;
                         break;
                     case gl.UNSIGNED_SHORT:
                         if (!ArrayBuffer.isView(indices)) {
-                            indicesView = new Uint16Array(indices, 0, indices.byteLength / 2);
+                            indices = new Uint16Array(indices, 0, indices.byteLength / 2);
                         }
                         start /= 2;
                         break;
@@ -427,7 +440,7 @@ define([
                     break;
             }
             if (areTriangles) {
-                this.triangles = buildTriangles(gl, drawState, start, count, positionData, indicesView);
+                this.triangles = buildTriangles(gl, drawState, start, count, positionData, indices);
                 var i;
 
                 // Generate interleaved position + normal data from triangles as a TRIANGLES list
