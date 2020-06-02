@@ -1,3 +1,5 @@
+var webpack = require('webpack');
+
 module.exports = {
     context: __dirname,
     entry: "./gli.js",
@@ -32,6 +34,9 @@ module.exports = {
             /dependencies\/syntaxhighlighter_3.0.83\/shCore\.js/,
         ]
     },
+    plugins: [
+      new webpack.optimize.UglifyJsPlugin()
+    ],
     resolve: {
         alias: {
             StackTrace: __dirname + '/dependencies/stacktrace.js',
